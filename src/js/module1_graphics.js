@@ -1,46 +1,7 @@
-
-function setWolfAndSheeps(){
-    placeFigure("sheep", "white", "B", 1);
-    placeFigure("sheep", "white", "D", 1);
-    placeFigure("sheep", "white", "F", 1);
-    placeFigure("sheep", "white", "H", 1);
-
-    placeFigure("wolf", "black", "E", 8);
-
-}
-
-function drawChessBoard(){
-    var board = document.getElementById("board");
-    for(var i = 8; i > 0; i--){
-        let startFromWhite = !!(i%2);
-        var row = createRowOfFields(startFromWhite, i);
-        board.appendChild(row);
-    }
-}
-
-function createRowOfFields(startFromWhite, row_number){
-    var row = document.createElement("div");
-    row.setAttribute("row", row_number);
-    row.classList.add("row");
-    for(var i = 0; i < 8; i++){
-        var field = createField(startFromWhite, String.fromCharCode(65+i));
-        row.appendChild(field);
-        startFromWhite = !startFromWhite;
-    }
-
-    return row;
-}
-
-function createField(isWhite, column){
+function createField(color,colNum) {
     var field = document.createElement("div");
-    field.classList.add("field");
-    if(isWhite){
-        field.classList.add("white");
-    } else {
-        field.classList.add("black");
-    }
-
-    field.setAttribute("col", column);
+    field.classList.add("field", color);
+    field.setAttribute("col",colNum);
 
     var fieldInside = document.createElement("div");
     fieldInside.classList.add("field-inside");
@@ -50,22 +11,47 @@ function createField(isWhite, column){
     return field;
 }
 
-function findField(col, row){
-    let fieldsRow = document.querySelector(`[row="${row}"]`);
-    let field = fieldsRow.querySelector(`[col=${col}]`);
-    return field;
+function createRow(rowNumber) {
+    var row = document.createElement("div");
+    row.classList.add("row");
+    row.setAttribute("row",rowNumber);
+
+    for (let i = 1; i < 9; i++) {
+        var color = (i + rowNumber % 2) % 2 ? "white":"black";
+        var field = createField(color,i);
+        row.appendChild(field);
+    }
+
+    return row;
 }
 
-function createFigure(figureName, color){
-    var figure = document.createElement("div");
-    figure.dataset.figure = figureName;
-    figure.dataset.color = color;
-    figure.dataset.moveCount = 0;
-    figure.classList.add("figure", figureName, color);
+function drawChessBoard() {
+    var board = document.getElementById("board");
+
+    for (let i = 8; i >0; i--) {
+        var col = createRow(i);
+        board.appendChild(col);
+    }
+}
+
+function createFigure(animalName){
+
+    var figure= document.createElement("div");
+    figure.classList.add("figure",animalName);
+
     return figure;
 }
 
-function placeFigure(figureName, color, row, col){
-    let figure = createFigure(figureName, color);
-    findField(row, col).children[0].appendChild(figure);
+function findField(col, row){
+
+    var field= document.querySelector(`[row="${row}"] [col="${col}"]`);
+    
+
+    return field;
+}
+
+function placeFigure(figureName, col, row){
+    var field=findField(col,row);
+    var figure=createFigure(figureName);
+    field.firstChild.appendChild(figure);
 }

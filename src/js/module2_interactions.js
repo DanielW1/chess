@@ -1,92 +1,79 @@
-
-function setUpGlobalEvents(){
-    document.addEventListener("click", (event)=>{
-        if(event.target.closest(".figure, .possible_move") == null){
-            clearPossibleMoves();
-        } 
-        var possible_move = event.target.closest(".possible_move");
-        if(possible_move != null){
-            move(possible_move);
-        }
-    });
-}
-
-function move(newField){
-    clearPossibleMoves();
-    var fromCol = newField.dataset.fromCol;
-    var fromRow = newField.dataset.fromRow;
-    var to = newField.querySelector(".field-inside");
-    
-    var figure = findField(fromCol, fromRow).querySelector(".figure");
-
-    to.appendChild(figure);
-    toggleTurn();
-    checkWinner();
-};
-
-function setOnFigureClickEvents(){
+function setEventListener() {
     var figures = document.querySelectorAll(".figure");
-    for( var i = 0; i < figures.length; i++ ){
-        figures[i].addEventListener("click", showPossibleMoves);
+
+    for (let item of figures) {
+        item.addEventListener("click", showPossibleMoves)
     }
+
+    document.addEventListener("click", function (event) {
+        if (event.target.closest(".possible_move")) {
+            //robimy ruch
+
+            moveFigure(event.target.closest(".possible_move"));
+
+        } else {
+            hideAllPossibleMoves();
+        }
+    })
 }
 
-function clearPossibleMoves(){
-    var possible_moves = document.querySelectorAll(".possible_move");
-    for(var item of possible_moves){
+function moveFigure(target) {
+
+    var fromCol = target.dataset.fromCol;
+    var fromRow = target.dataset.fromRow;
+    var figure = findField(fromCol, fromRow).querySelector(".figure");
+    target.firstChild.appendChild(figure);
+    hideAllPossibleMoves();
+}
+
+function hideAllPossibleMoves() {
+    var items = document.querySelectorAll(".possible_move");
+    for (var item of items) {
         item.classList.remove("possible_move");
     }
+
 }
 
-function showPossibleMoves(event){
-    if(event.target.dataset.figure != window.turn) return;
-
+function showPossibleMoves(event) {
     event.stopPropagation();
-    clearPossibleMoves();
+    hideAllPossibleMoves();
+    var clickedFigure = event.target;
+    var col = +clickedFigure.closest(".field").getAttribute("col");
+    var row = + clickedFigure.closest(".row").getAttribute("row");
 
-    var figureEl = event.target;
-    var col = figureEl.closest(".field").getAttribute("col");
-    var row = +figureEl.closest(".row").getAttribute("row");
+    var newRow = clickedFigure.classList.contains("wolf") ? row - 1 : row + 1;
+    var col_left = col - 1;
+    var col_right = col + 1;
 
-    showMoves(figureEl, col, row);
-}
-
-function ltor(letter){
-    return letter.charCodeAt(0) - 65;
-}
-function rtol(number){
-    return String.fromCharCode( number + 65 );
-}
-function isFieldOccupied(col, row){
-    if(row > 8 || row < 1 || ltor(col) < 0 || ltor(col) >= 8) return true;
-    var field = findField(col, row);
-
-
-    return !!field.children[0].children.length > 0;
-}
-
-
-function showMoves(figureEl, col, row){
-    var coln = ltor(col);
-
-    var col_left = rtol(coln-1);
-    var col_right = rtol(coln+1);
-
-    var newrow = figureEl.dataset.figure == "wolf" ? row-1 : Number(row)+1;
-
-
-    if(!isFieldOccupied( col_left, newrow)){
-        let field = findField(col_left, newrow);
-        field.classList.add("possible_move");
-        field.dataset.fromCol = col;
-        field.dataset.fromRow = row;
+    if (newRow < 1 || newRow > 8) {
+        return;
     }
 
-    if(!isFieldOccupied( col_right, newrow)){
-        let field = findField(col_right, newrow);
-        field.classList.add("possible_move");
-        field.dataset.fromCol = col;
-        field.dataset.fromRow = row;
+    if (col_left > 0 && col_left < 9) {
+        if (isFieldEmpty(col_left, newRow)) {
+            let field = findField(col_left, newRow);
+            field.classList.add("possible_move");
+            field.dataset.fromCol = col;
+            field.dataset.fromRow = row;
+        }
     }
 
+
+    if (col_right > 0 && col_right < 9) {
+        if (isFieldEmpty(col_right, newRow)) {
+            let field = findField(col_right, newRow);
+            field.classList.add("possible_move");
+            field.dataset.fromCol = col;
+            field.dataset.fromRow = row;
+        }
+    }
+
+}
+
+function isFieldEmpty(col, row) {
+    return !findField(col, row).querySelector(".figure");
+}
+
+function isFieldOccupied(col, row) {
+    return findField(col.row).querySelector(".figure")
 }
